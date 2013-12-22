@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+		<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=7kV7hvD28C3BTTXCVfIWdoz4"></script>
+		<title>BUPT-map</title>
+		<script type="text/javascript" src="http://api.map.baidu.com/library/SearchInfoWindow/1.5/src/SearchInfoWindow_min.js"></script>
+		<link rel="stylesheet" href="http://api.map.baidu.com/library/SearchInfoWindow/1.5/src/SearchInfoWindow_min.css" />
+	</head>
+	<body>
+		<div class="navbar navbar-fixed-top" role="navigation">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle btn-default" data-toggle="collapse" data-target=".navbar-collapse">
+					<span class="sr-only">Toggle navigation</span>
+					<span class="icon-bar btn-info"></span>
+					<span class="icon-bar btn-info"></span>
+					<span class="icon-bar btn-info"></span>
+				</button>
+				<a class="navbar-brand" href="#">BUPT-map</a>
+			</div>
+			<div class="navbar-collapse collapse">
+				<ul class="nav navbar-nav">
+					<li><a href="#" id='allgeo' onclick="return false;">全部地点</a></li>
+					<li><a href="#" id='mygeo' onclick="return false;">我的地点</a></li>
+					<li><a href="#" id='addgeo' onclick="return false;">添加地点</a></li>
+				</ul>
+				<div class="nav navbar-nav navbar-form" role="search">
+      				<div class="form-group">
+        				<input type="text" class="form-control" id="k-searchbar" placeholder="搜索">
+    				</div>
+    				<a href="#" onclick="return false;" class="btn btn-small btn-info" id="k-search-btn">搜索</a>
+    			</div>
+				<ul class="nav navbar-nav navbar-right">
+					<li><img class="weibo-img" src=<%= session[:image] %>></li>
+					<li><a href=<%= session[:weibo] %>><%= session[:name] %></a></li>
+					<li><a href="/user/logout">登出</a></li>
+				</ul>
+			</div><!--/.nav-collapse -->
+		</div>
+
+	<div class="containter">
+		<div id="allmap"></div>
+	</div>
+	<div class="popbox" id="popbox">
+		<div class="form-horizontal">
+			<div class="form-group">
+				<label for="inputtitle" class="col-sm-4 control-label">名称</label>
+				<div class="col-sm-8">
+					<input type="text" class="title" id="inputtitle" placeholder="名称"/>
+				</div>
+			</div>
+			<div class="form-group">
+				<label for="inputaddress" class="col-sm-4 control-label">地址</label>
+				<div class="col-sm-8">
+					<input type="text" class="address" id="inputaddress" placeholder="地址"/>
+				</div>
+			</div>
+			<div class="form-group">
+				<label for="inputtag" class="col-sm-4 control-label">标签</label>
+				<div class="col-sm-8">
+					<input type="text" class="tag" id="inputtag" placeholder="标签(可选)"/>
+				</div>
+			</div>
+			<div class="form-group">
+				<div class="col-sm-offset-4 col-sm-2">
+					<a href="#" onclick="return false;" class="btn btn-info" id="k-btn-save" data-lat="" data-lng="" data-uname="<%= session[:name] %>" data-uid="<%= session[:current_uid] %>">保存</a>
+				</div>
+				<div class="col-sm-2">
+					<a href="#" onclick="hidepop();return false;" class="btn btn-default">取消</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	</body>
+</html>
+
+<script type="text/javascript">
+// 百度地图API功能
+var map = new BMap.Map("allmap");            // 创建Map实例
+var point = new BMap.Point(116.365, 39.968);    // 创建点坐标
+map.centerAndZoom(point,17);                     // 初始化地图,设置中心点坐标和地图级别。
+map.enableScrollWheelZoom();                           //启用滚轮放大缩小
+</script>
+<script type="text/javascript">
+	var creatable_flag = false;
+
+	var customLayer;
+	function addCustomLayer(keyword) {
+		if (customLayer) {
+			map.removeTileLayer(customLayer);
+		}
+		customLayer=new BMap.CustomLayer({
+			geotableId: 46438,
+			q: keyword, //检索关键字
+			tags: '', //空格分隔的多字符串
+			filter: '' //过滤条件,参考http://developer.baidu.com/map/lbs-geosearch.htm#.search.nearby
+	});
+		map.addTileLayer(customLayer);
+		customLayer.addEventListener('hotspotclick',callback);
+	}
+	addCustomLayer();
+
+function callback(e)//单击热点图层
+{
+	var customPoi = e.customPoi,cpoi = e.content,
+	str = [];
+	str.push("address = " + customPoi.address);
+	str.push("cbname = " + cpoi.cbname);
+		var content = '<p style="width:280px;margin:0;line-height:20px;">地址：' + customPoi.address + '<br>创建者：' + cpoi.cbname + '<br>标签：' + cpoi.tags +'</p>';
+		var searchInfoWindow = new BMapLib.SearchInfoWindow(map, content, {
+			title: customPoi.title, //标题
+			width: 290, //宽度
+			height: 65, //高度
+			panel : "panel", //检索结果面板
+			enableAutoPan : true, //自动平移
+			enableSendToPhone: true, //是否显示发送到手机按钮
+			searchTypes :[
+				BMAPLIB_TAB_SEARCH,   //周边检索
+				BMAPLIB_TAB_TO_HERE,  //到这里去
+				BMAPLIB_TAB_FROM_HERE //从这里出发
+				]
+			});
+
+
+		var point = new BMap.Point(customPoi.point.lng, customPoi.point.lat);
+		searchInfoWindow.open(point);
+}
+
+	document.getElementById("allgeo").onclick = function(){
+		// $(".active").removeAttr('active');
+		// $(this).addClass('active');
+		addCustomLayer();
+	}
+
+	document.getElementById("mygeo").onclick = function(){
+		// $(".active").removeAttr('active');
+		// $(this).addClass('active');
+		addMyCustomLayer(<%= session[:current_uid] %>);
+	}
+	map.onclick = function(e){
+		if(creatable_flag){
+			var btnSave = $("#k-btn-save");
+			btnSave.attr("data-lat",e.point.lat);
+			btnSave.attr('data-lng', e.point.lng);
+			showpop();
+		}
+	}
+	var showpop = function(){
+		$("#popbox").fadeIn(500);
+	}
+	var hidepop = function(){
+		$("#popbox").fadeOut(500);
+		$("#addgeo").removeClass("active-addgeo");
+		// $("#mygeo:parent").addClass('active');
+		// addMyCustomLayer(<%= session[:current_uid] %>);
+	}
+
+	$("#addgeo").click(function(e) {
+		$(".active").removeAttr('active');
+		$(this).addClass('active-addgeo');
+		creatable_flag = true;
+	});
+
+	$("#k-btn-save").click(function(e){
+		var title = $("#popbox .title").val(),
+			address = $("#popbox .address").val(),
+			tag = $("#popbox .tag").val(),
+			uname = $(this).attr("data-uname"),
+			uid = $(this).attr("data-uid"),
+			// point = $(this).attr("data-point"),
+			lat = $(this).attr("data-lat"),
+			lng = $(this).attr("data-lng");
+
+		$.ajax({
+			type: "POST",
+			url: "http://api.map.baidu.com/geodata/v2/poi/create",
+			data:{
+				geotable_id:'46438',
+				latitude:lat,
+				longitude:lng,
+				coord_type:3,
+				title:title,
+				address:address,
+				tags:tag,
+				cb:uid,
+				cbname:uname,
+				ak:'7kV7hvD28C3BTTXCVfIWdoz4'
+			},
+			// success:function(response){
+			// 	var res = $.parseJSON(response);
+			// 	if(1){
+			// 		alert(res.message);
+			// 		hidepop();
+			// 		creatable_flag=false;
+			// 	}
+			// },
+			dataType:"json"
+		});
+		alert("成功！");
+		hidepop();
+		creatable_flag=false;
+		addCustomLayer();
+	});
+
+	$("#k-search-btn").click(function(e) {
+		var q = $("#k-searchbar").val();
+		addCustomLayer(q);
+	});
+
+	function addMyCustomLayer(uid) {
+		if (customLayer) {
+			map.removeTileLayer(customLayer);
+		}
+		customLayer=new BMap.CustomLayer({
+			geotableId: 46438,
+			q: '', //检索关键字
+			tags: '', //空格分隔的多字符串
+			filter: "cb:"+uid+","+uid //过滤条件,参考http://developer.baidu.com/map/lbs-geosearch.htm#.search.nearby
+		});
+		map.addTileLayer(customLayer);
+		customLayer.addEventListener('hotspotclick',callback);
+	}
+
+
+customLayer.addEventListener('onhotspotclick',callback);//单击图层事件
+</script>
