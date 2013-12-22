@@ -101,6 +101,20 @@ map.enableScrollWheelZoom();                           //启用滚轮放大缩�
 	}
 	addCustomLayer();
 
+	function addCustomLayerbyTags(tag) {
+		if (customLayer) {
+			map.removeTileLayer(customLayer);
+		}
+		customLayer=new BMap.CustomLayer({
+			geotableId: 46438,
+			q: '', //检索关键字
+			tags: tag, //空格分隔的多字符串
+			filter: '' //过滤条件,参考http://developer.baidu.com/map/lbs-geosearch.htm#.search.nearby
+	});
+		map.addTileLayer(customLayer);
+		customLayer.addEventListener('hotspotclick',callback);
+	}
+
 function callback(e)//单击热点图层
 {
 	var customPoi = e.customPoi,cpoi = e.content,
@@ -127,17 +141,18 @@ function callback(e)//单击热点图层
 		searchInfoWindow.open(point);
 }
 
-	document.getElementById("allgeo").onclick = function(){
+	$("#allgeo").click(function(){
 		// $(".active").removeAttr('active');
 		// $(this).addClass('active');
 		addCustomLayer();
-	}
+	});
 
-	document.getElementById("mygeo").onclick = function(){
+	$("#mygeo").click(function(){
 		// $(".active").removeAttr('active');
 		// $(this).addClass('active');
 		addMyCustomLayer(<%= session[:current_uid] %>);
-	}
+	});
+
 	map.onclick = function(e){
 		if(creatable_flag){
 			var btnSave = $("#k-btn-save");
@@ -189,7 +204,7 @@ function callback(e)//单击热点图层
 			},
 			// success:function(response){
 			// 	var res = $.parseJSON(response);
-			// 	if(1){
+			// 	if(success){
 			// 		alert(res.message);
 			// 		hidepop();
 			// 		creatable_flag=false;
@@ -203,9 +218,23 @@ function callback(e)//单击热点图层
 		addCustomLayer();
 	});
 
-	$("#k-search-btn").click(function(e) {
+	function search() {
 		var q = $("#k-searchbar").val();
-		addCustomLayer(q);
+		if (q.match("tag") != null) {
+			tag = q.match(/[^:：]*$/g).join("");
+			addCustomLayerbyTags(tag);
+		}
+		else {
+			addCustomLayer(q);
+		};
+	}
+
+	$("#k-search-btn").click(function(e) {
+		search();
+	});
+
+	$("#k-searchbar").keydown(function(e) {
+		if (window.event.keyCode == 13) {search();};
 	});
 
 	function addMyCustomLayer(uid) {
