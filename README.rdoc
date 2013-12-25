@@ -1,28 +1,20 @@
-== README
-
-This README would normally document whatever steps are necessary to get the
-application up and running.
-
-Things you may want to cover:
-
-* Ruby version
-
-* System dependencies
-
-* Configuration
-
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+== 使用说明
 
 
-Please feel free to use a different markup language if you do not plan to run
-<tt>rake doc:app</tt>.
+1. 环境
+
+	rvm+ruby2.0.0
+
+2. 在terminal中cd到该文件夹，首先执行
+		`bundle install`
+	安装必要的gem包
+
+3. 修改 config/initializers/ominiauth.rb 中的微博app key和secret key
+
+4. 修改 app/views/map/index.html.erb 中的百度地图ak以及geotable_id号码
+
+5. 执行 `rackup` 将启动Webrick服务器，将网站部署在`localhost:3000`端口
+
+6. 根据Weibo要求，需要在open.weibo.com添加认证返回地址。由于不支持localhost，因此需要修改本地hosts文件，添加返回地址域名到127.0.0.1
+
+7. 若要修改默认端口，可以在apache或者nginx中加一个代理。

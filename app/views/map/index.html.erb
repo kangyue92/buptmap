@@ -38,6 +38,9 @@
 				</ul>
 			</div><!--/.nav-collapse -->
 		</div>
+	<div>
+		<%= csrf_meta_tags %>
+	</div>
 
 	<div class="containter">
 		<div id="allmap"></div>
@@ -167,6 +170,7 @@ function callback(e)//单击热点图层
 	var hidepop = function(){
 		$("#popbox").fadeOut(500);
 		$("#addgeo").removeClass("active-addgeo");
+		creatable_flag = false;
 		// $("#mygeo:parent").addClass('active');
 		// addMyCustomLayer(<%= session[:current_uid] %>);
 	}
@@ -210,11 +214,12 @@ function callback(e)//单击热点图层
 			// 		creatable_flag=false;
 			// 	}
 			// },
+			// !!!ajax跨域post问题会导致无法返回正确的状态信息。完成后台转发功能后，使用url:"/poster/create"
 			dataType:"json"
 		});
 		alert("成功！");
 		hidepop();
-		creatable_flag=false;
+		creatable_flag = false;
 		addCustomLayer();
 	});
 

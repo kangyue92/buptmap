@@ -3,6 +3,10 @@ Buptmap::Application.routes.draw do
   get "user/login"
   get "map/index"
   get '/auth/:provider/callback', to: 'sessions#create'
+
+  post "poster/create", to: 'poster#create'
+  get "poster/show", to: 'poster#show'
+
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
 
